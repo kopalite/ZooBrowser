@@ -11,5 +11,7 @@ namespace ZooBrowser.Services
         Task<IEnumerable<NodeViewModel>> GetChildrenAsync(string path);
 
         Task<DataViewModel> GetDataAsync(string path);
+
+        Task<IEnumerable<NodeViewModel>> GetAllAsync();
     }
 }

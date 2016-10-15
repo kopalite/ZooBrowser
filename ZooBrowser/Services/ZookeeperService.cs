@@ -40,6 +40,7 @@ namespace ZooBrowser.Services
                 {
                     _api = new ZooKeeper(CnnString, 5000, null, true);
                 }
+
                 return _api;
             }
         }
@@ -47,17 +48,23 @@ namespace ZooBrowser.Services
         public async Task<IEnumerable<NodeViewModel>> GetChildrenAsync(string path)
         {
             ValidatePath(path);
-
             var nodes = await Api.getChildrenAsync(path);
-            return nodes.Children.Select(x => new NodeViewModel(this, path) { Name = x });
+            return nodes.Children.Select(x => new NodeViewModel(this, path, x));
         }
 
         public async Task<DataViewModel> GetDataAsync(string path)
         {
             ValidatePath(path);
-
             var data = await Api.getDataAsync(path);
             return new DataViewModel(data.Data, data.Stat);
+        }
+
+        public async Task<IEnumerable<NodeViewModel>> GetAllAsync()
+        {
+            var rootNodes = await Api.getChildrenAsync("/");
+            var allTasks = rootNodes.Children.Select(x => ZKUtil.listSubTreeBFS(Api, "/" + x));
+            var allNodes = (await Task.WhenAll(allTasks)).SelectMany(x => x).ToArray();
+            return allNodes.Select(x => new NodeViewModel(this, x, GetNodeName(x))).ToArray();
         }
 
         private void ValidatePath(string path)
@@ -70,7 +77,18 @@ namespace ZooBrowser.Services
             {
                 throw new Exception(string.Format("Node path '{0}' is invalid. {1}", path, ex.Message)); 
             }
-            
+        }
+
+        private string GetNodeName(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            var segments = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            return segments.LastOrDefault();
         }
     }
 }

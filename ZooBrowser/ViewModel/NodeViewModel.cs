@@ -15,7 +15,7 @@ namespace ZooBrowser.ViewModel
         public string Name
         {
             get { return _name; }
-            set
+            private set
             {
                 _name = value;
                 RaisePropertyChanged(() => Name);
@@ -34,7 +34,7 @@ namespace ZooBrowser.ViewModel
         public DataViewModel Data
         {
             get { return _data; }
-            set
+            private set
             {
                 _data = value;
                 RaisePropertyChanged(() => Data);
@@ -45,17 +45,18 @@ namespace ZooBrowser.ViewModel
         public ObservableCollection<NodeViewModel> Children
         {
             get { return _children; }
-            set
+            private set
             {
                 _children = value;
                 RaisePropertyChanged(() => Children);
             }
         }
 
-        public NodeViewModel(IZookeeperService service, string root)
+        public NodeViewModel(IZookeeperService service, string root, string name)
         {
             _service = service;
             _root = root;
+            _name = name;
             Children = new ObservableCollection<NodeViewModel>();
         }
 
